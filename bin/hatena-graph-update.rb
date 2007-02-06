@@ -4,6 +4,13 @@ require 'ostruct'
 require 'time'
 require 'hatena/api/graph'
 
+Version = '0.0.1'
+
+def error_exit( msg, code = -1 )
+	$stderr.puts( "#{File::basename $0}: #{msg}" )
+	exit( code )
+end
+
 Opt = OpenStruct::new
 Opt.user = nil
 Opt.pass = nil
@@ -17,6 +24,27 @@ ARGV.options do |opt|
 	opt.on( '-p PASSWD', '--passwd' )  {|v| Opt.pass = v }
 	opt.on( '-d DATE', '--date' )      {|v| Opt.date = Time::parse( v ) }
 #	opt.on( '-a', '--append' )         {|v| Opt.append = true }
+	opt.on( '-h', '--help' ) do |v|
+		puts <<-USAGE.gsub( /^\t\t/, '' )
+		hatena-graph-update: sending data to hatena graph service.
+		usage:
+		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] graph [data...]
+		   
+		   -u id, --user         : user ID of hatena service.
+		   -p password, --passwd : password of hatena service.
+		   -d date, --date       : date of data. (default TODAY)
+		   graph                 : name of graph on hatena.
+		   data                  : data in numeric. (default from STDIN)
+		   
+		   If no --user option specified, this comment try to get it from ~/.netrc
+		   machine as 'hatena.ne.jp'.
+		   
+		Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
+		Distributed under GPL.
+		
+		USAGE
+		exit
+	end
 	opt.parse!
 end
 Opt.graph = ARGV.shift
@@ -25,9 +53,7 @@ if ARGV.length == 0 then # get from stdin
 		Opt.data += l.to_f
 	end
 else
-	ARGV.each do |arg|
-		Opt.data += arg.to_f
-	end
+	ARGV.each {|arg| Opt.data += arg.to_f }
 end
 
 unless Opt.user then
@@ -36,10 +62,13 @@ unless Opt.user then
 		Opt.user = netrc.login
 		Opt.pass = netrc.password
 	else
-		$stderr.puts 'no user name.'
-		exit
+		error_exit( 'no hatena.ne.jp entry in .netrc.' )
 	end
 end
+
+error_exit( 'no user id specified.' ) unless Opt.user
+error_exit( 'no password specified.' ) unless Opt.pass
+error_exit( 'no graph name specified.' ) unless Opt.graph
 
 g = Hatena::API::Graph::new( Opt.user, Opt.pass )
 g.post( Opt.graph, Opt.date, Opt.data )
