@@ -1,0 +1,63 @@
+hatena-graph-update: はてなグラフを更新するコマンド
+
+Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
+Distributed under GPL.
+
+■これはなに?
+はてなグラフ<http://graph.hatena.ne.jp/>というサービスがあります。
+さまざまなデータの、日ごとの移り変わりをグラフにして表現してくれる
+サービスです。
+
+通常はWeb上のインタフェースからデータを入力するのですが、APIが公開
+されているので、プログラムから自動的にグラフを更新することができま
+す。
+
+hatena-graph-updateは、コマンドラインから数値を指定して特定のグラフ
+を更新するためのコマンドです。コマンドパラメタや標準入力からデータ
+を入力できるので、cronやメールとの連携が簡単にできます。
+
+■使い方
+実行には、Ruby 1.8.4以降が必要です<http://www.ruby-lang.org/>。
+
+また、はてなのユーザID/パスワードをコマンドパラメタで渡したくない
+場合にはnet/netrcmライブラリ<https://rubyforge.org/projects/net-netrc/>
+が利用できるようにインストールされている必要があります。
+
+コマンドシンタックスは以下のとおりです:
+
+  % hatena-graph-update [-u user] [-p pass] [-d date] [-a] graph [data...]
+
+  -u user, --user   : はてなのユーザID。無指定時には~/.netrcを見ます
+  -p pass, --passwd : はてなのパスワード
+  -d date, --date   : グラフの日付。無指定時には実行時の日付
+  -a                : 追加モード(未実装)
+  graph             : 更新するグラフの名前(必須)
+  data              : 更新するデータ。無指定時には標準入力
+
+ユーザIDをコマンドパラメタで指定しなかった場合には、~/.netrcの中
+から、machineに「hatena.ne.jp」を指定したエントリを参照して使い
+ます。
+
+dataは、複数指定できます。値は小数に変換された後、すべて足しあわされて
+から、今日、ないしは指定した日付のグラフの値として登録されます。
+
+■実行例
+(1) メールで体重を更新
+  メールの本文に体重を書いて特定のアドレスに送ると、その値がグラフに
+  反映されます。procmailを使うとこんな感じに書けます。
+
+  :0
+  * ^TO_.*weight@example.com
+  | sed '1,/^$/d' | hatena-graph-update weight
+
+(2) ログファイルのサイズをグラフ化
+  cronなどでログファイルの切り替えをする際に、前日のログファイルの行数
+  をグラフに送ります。
+
+  #!/bin/sh
+  yesterday=`date -d yesterday +%Y-%m-%d`
+
+  cd /var/log/hoge
+  mv hoge.log hoge.log.$yesterday
+  wc -l < hoge.log.$yesterday |\
+     hatena-graph-update -u hoge -p hoge -d $yesterday logsize
