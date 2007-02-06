@@ -1,8 +1,5 @@
 hatena-graph-update: はてなグラフを更新するコマンド
 
-Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
-Distributed under GPL.
-
 ■これはなに?
 はてなグラフ<http://graph.hatena.ne.jp/>というサービスがあります。
 さまざまなデータの、日ごとの移り変わりをグラフにして表現してくれる
@@ -17,11 +14,16 @@ hatena-graph-updateは、コマンドラインから数値を指定して特定�
 を入力できるので、cronやメールとの連携が簡単にできます。
 
 ■使い方
-実行には、Ruby 1.8.4以降が必要です<http://www.ruby-lang.org/>。
+実行には、Ruby 1.8.4以降が必要です。
+   http://www.ruby-lang.org/
+
+はてなグラフAPIライブラリも必須です。
+   http://rubyforge.org/projects/hatenaapigraph/
 
 また、はてなのユーザID/パスワードをコマンドパラメタで渡したくない
-場合にはnet/netrcmライブラリ<https://rubyforge.org/projects/net-netrc/>
-が利用できるようにインストールされている必要があります。
+場合にはnet/netrcライブラリが利用できるようにインストールされてい
+る必要があります。
+   http://rubyforge.org/projects/hatenaapigraph/
 
 コマンドシンタックスは以下のとおりです:
 
@@ -61,3 +63,7 @@ dataは、複数指定できます。値は小数に変換された後、すべ�
   mv hoge.log hoge.log.$yesterday
   wc -l < hoge.log.$yesterday |\
      hatena-graph-update -u hoge -p hoge -d $yesterday logsize
+
+■ライセンス
+Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
+Distributed under GPL.
