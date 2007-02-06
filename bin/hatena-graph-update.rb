@@ -2,13 +2,18 @@
 require 'optparse'
 require 'ostruct'
 require 'time'
-require 'hatena/api/graph'
 
-Version = '0.0.1'
+Version = '0.0.2'
 
 def error_exit( msg, code = -1 )
 	$stderr.puts( "#{File::basename $0}: #{msg}" )
 	exit( code )
+end
+
+begin
+	require 'hatena/api/graph'
+rescue LoadError
+	error_exit 'Hatena::Api::Graph not found. See <http://rubyforge.org/projects/hatenaapigraph/>'
 end
 
 Opt = OpenStruct::new
@@ -57,12 +62,15 @@ else
 end
 
 unless Opt.user then
-	require 'net/netrc'
-	if netrc = Net::Netrc.locate( 'hatena.ne.jp' ) then
-		Opt.user = netrc.login
-		Opt.pass = netrc.password
-	else
-		error_exit( 'no hatena.ne.jp entry in .netrc.' )
+	begin
+		require 'net/netrc'
+		if netrc = Net::Netrc.locate( 'hatena.ne.jp' ) then
+			Opt.user = netrc.login
+			Opt.pass = netrc.password
+		else
+			error_exit( 'no hatena.ne.jp entry in .netrc.' )
+		end
+	rescue LoadError
 	end
 end
 
