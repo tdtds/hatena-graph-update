@@ -32,13 +32,21 @@ hatena-graph-updateは、コマンドラインから数値を指定して特定�
   -u user, --user   : はてなのユーザID。無指定時には~/.netrcを見ます
   -p pass, --passwd : はてなのパスワード
   -d date, --date   : グラフの日付。無指定時には実行時の日付
-  -a                : 追加モード(未実装)
+  -a                : 追加モード
+  -c cache, --cache : 追加モード時にキャッシュを保存するディレクトリ
   graph             : 更新するグラフの名前(必須)
   data              : 更新するデータ。無指定時には標準入力
 
 ユーザIDをコマンドパラメタで指定しなかった場合には、~/.netrcの中
 から、machineに「hatena.ne.jp」を指定したエントリを参照して使い
 ます。
+
+追加モード(-a)を指定した時には、同時にキャッシュディレクトリを-cで指定
+しなくてはいけません。これは、はてなグラフAPIが現在のデータを取得でき
+るようになるまでの暫定的な仕様です。-cで指定したディレクトリには、グラ
+フ名(graph)と同じ名前のファイルが作成され、日付ごとに最近のデータ値が
+記録されています。このため、追加モードを使ったグラフでは、他のルートで
+データを操作してはいけません。
 
 dataは、複数指定できます。値は小数に変換された後、すべて足しあわされて
 から、今日、ないしは指定した日付のグラフの値として登録されます。
@@ -63,6 +71,26 @@ dataは、複数指定できます。値は小数に変換された後、すべ�
   mv hoge.log hoge.log.$yesterday
   wc -l < hoge.log.$yesterday |\
      hatena-graph-update -u hoge -p hoge -d $yesterday logsize
+
+(3) 摂取カロリーを食事のたびに追記する
+  朝昼晩の3回の食事のつど、追加モードで摂取カロリーを記録します。
+
+  朝:
+  % hatena-graph-update -a -c /var/cache/hatena-graph calorie
+  410
+  100
+  ^D
+
+  昼:
+  % hatena-graph-update -a -c /var/cache/hatena-graph calorie
+  720
+
+  晩:
+  % hatena-graph-update -a -c /var/cache/hatena-graph calorie
+  430
+  200
+  150
+  ^D
 
 ■ライセンス
 Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>

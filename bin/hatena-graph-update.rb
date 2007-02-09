@@ -2,6 +2,9 @@
 require 'optparse'
 require 'ostruct'
 require 'time'
+require 'pathname'
+require 'yaml'
+require 'hatena/api/graph'
 
 Version = '0.0.2'
 
@@ -21,6 +24,7 @@ Opt.user = nil
 Opt.pass = nil
 Opt.date = Time::now
 Opt.append = false
+Opt.cache = nil
 Opt.graph = nil
 Opt.data = 0.0
 
@@ -28,16 +32,19 @@ ARGV.options do |opt|
 	opt.on( '-u HATENA_ID', '--user' ) {|v| Opt.user = v }
 	opt.on( '-p PASSWD', '--passwd' )  {|v| Opt.pass = v }
 	opt.on( '-d DATE', '--date' )      {|v| Opt.date = Time::parse( v ) }
-#	opt.on( '-a', '--append' )         {|v| Opt.append = true }
+	opt.on( '-a', '--append' )         {|v| Opt.append = true }
+	opt.on( '-c CACHE', '--cache' )    {|v| Opt.cache = v }
 	opt.on( '-h', '--help' ) do |v|
 		puts <<-USAGE.gsub( /^\t\t/, '' )
 		hatena-graph-update: sending data to hatena graph service.
 		usage:
-		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] graph [data...]
+		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] [-a -c cache] graph [data...]
 		   
 		   -u id, --user         : user ID of hatena service.
 		   -p password, --passwd : password of hatena service.
 		   -d date, --date       : date of data. (default TODAY)
+		   -a                    : append to data of same day.
+		   -c cache, --cache     : dirctory of data cache for append mode.
 		   graph                 : name of graph on hatena.
 		   data                  : data in numeric. (default from STDIN)
 		   
@@ -52,15 +59,10 @@ ARGV.options do |opt|
 	end
 	opt.parse!
 end
-Opt.graph = ARGV.shift
-if ARGV.length == 0 then # get from stdin
-	while l = gets
-		Opt.data += l.to_f
-	end
-else
-	ARGV.each {|arg| Opt.data += arg.to_f }
-end
 
+#
+# check user id and password
+#
 unless Opt.user then
 	begin
 		require 'net/netrc'
@@ -73,10 +75,43 @@ unless Opt.user then
 	rescue LoadError
 	end
 end
-
 error_exit( 'no user id specified.' ) unless Opt.user
 error_exit( 'no password specified.' ) unless Opt.pass
+
+#
+# check graph parameter
+#
+Opt.graph = ARGV.shift
 error_exit( 'no graph name specified.' ) unless Opt.graph
+
+#
+# check data
+#
+if ARGV.length == 0 then # get from stdin
+	while l = gets
+		Opt.data += l.to_f
+	end
+else
+	ARGV.each {|arg| Opt.data += arg.to_f }
+end
+
+#
+# check append option
+#
+if Opt.append then
+	unless Opt.cache then
+		error_exit( "cache directory dose not specified." )
+	end
+	cache = Pathname::new( Opt.cache )
+	error_exit( "Such as no directory: #{Opt.cache}" ) unless cache.directory?
+
+	datas = Hash::new( 0.0 )
+	cache_file = cache + Opt.graph
+	cache_file.open {|f| datas = YAML::load( f ) } rescue false
+	Opt.data += datas[Opt.date.strftime( '%Y-%m-%d' )]
+	datas[Opt.date.strftime( '%Y-%m-%d' )] = Opt.data
+	cache_file.open( 'w' ) {|f| YAML::dump( datas, f ) }
+end
 
 g = Hatena::API::Graph::new( Opt.user, Opt.pass )
 g.post( Opt.graph, Opt.date, Opt.data )
