@@ -6,7 +6,7 @@ require 'pathname'
 require 'yaml'
 require 'hatena/api/graph'
 
-Version = '0.0.2'
+Version = '0.0.4'
 
 def error_exit( msg, code = -1 )
 	$stderr.puts( "#{File::basename $0}: #{msg}" )
@@ -107,7 +107,7 @@ if Opt.append then
 
 	datas = Hash::new( 0.0 )
 	cache_file = cache + Opt.graph
-	cache_file.open {|f| datas = YAML::load( f ) } rescue false
+	cache_file.open {|f| datas.update( YAML::load( f ) ) } rescue false
 	Opt.data += datas[Opt.date.strftime( '%Y-%m-%d' )]
 	datas[Opt.date.strftime( '%Y-%m-%d' )] = Opt.data
 	cache_file.open( 'w' ) {|f| YAML::dump( datas, f ) }
