@@ -1,4 +1,12 @@
 #!/usr/bin/env ruby
+
+#
+# hatena-graph-update
+#
+# Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
+# Distributed under GPL.
+#
+
 require 'optparse'
 require 'ostruct'
 require 'time'
@@ -6,7 +14,7 @@ require 'pathname'
 require 'yaml'
 require 'hatena/api/graph'
 
-Version = '0.0.4'
+Version = '1.0.0'
 
 def error_exit( msg, code = -1 )
 	$stderr.puts( "#{File::basename $0}: #{msg}" )
@@ -113,5 +121,9 @@ if Opt.append then
 	cache_file.open( 'w' ) {|f| YAML::dump( datas, f ) }
 end
 
-g = Hatena::API::Graph::new( Opt.user, Opt.pass )
-g.post( Opt.graph, Opt.date, Opt.data )
+begin
+	g = Hatena::API::Graph::new( Opt.user, Opt.pass )
+	g.post( Opt.graph, Opt.date, Opt.data )
+rescue Hatena::API::GraphError
+	error_exit( $!.message )
+end

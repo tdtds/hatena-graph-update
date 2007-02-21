@@ -39,7 +39,7 @@ hatena-graph-updateは、コマンドラインから数値を指定して特定�
 
 ユーザIDをコマンドパラメタで指定しなかった場合には、~/.netrcの中
 から、machineに「hatena.ne.jp」を指定したエントリを参照して使い
-ます。
+ます。loginとpasswordの値が必要です。
 
 追加モード(-a)を指定した時には、同時にキャッシュディレクトリを-cで指定
 しなくてはいけません。これは、はてなグラフAPIが現在のデータを取得でき
@@ -73,23 +73,26 @@ dataは、複数指定できます。値は小数に変換された後、すべ�
      hatena-graph-update -u hoge -p hoge -d $yesterday logsize
 
 (3) 摂取カロリーを食事のたびに追記する
-  朝昼晩の3回の食事のつど、追加モードで摂取カロリーを記録します。
+  朝昼晩の3回の食事のつど、追加モードで摂取カロリーを記録します。数値の
+  後ろに数値以外の文字が書かれていても無視されるので、何を食べたのか同時
+  に記録しておくことができます。
 
   朝:
   % hatena-graph-update -a -c /var/cache/hatena-graph calorie
-  410
-  100
+  410 チーズトースト
+  100 ミルクティ
   ^D
 
   昼:
   % hatena-graph-update -a -c /var/cache/hatena-graph calorie
-  720
+  720 カレーライス
+  ^D
 
   晩:
   % hatena-graph-update -a -c /var/cache/hatena-graph calorie
-  430
-  200
-  150
+  430 さばの味噌煮
+  200 ごはん
+  150 味噌汁
   ^D
 
 ■ライセンス
