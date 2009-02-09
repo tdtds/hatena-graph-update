@@ -21,9 +21,10 @@ hatena-graph-updateは、コマンドラインから数値を指定して特定�
    http://rubyforge.org/projects/hatenaapigraph/
 
 また、はてなのユーザID/パスワードをコマンドパラメタで渡したくない
-場合にはnet/netrcライブラリが利用できるようにインストールされてい
-る必要があります。
-   http://rubyforge.org/projects/net-netrc/
+場合にはpitもしくはnet/netrcライブラリが利用できるようにインストー
+ルされている必要があります。
+   http://rubyforge.org/projects/lowreal/   (pit)
+   http://rubyforge.org/projects/net-netrc/ (net-netirc)
 
 コマンドシンタックスは以下のとおりです:
 

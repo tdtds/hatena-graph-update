@@ -18,7 +18,7 @@ require 'pathname'
 require 'yaml'
 require 'hatena/api/graph'
 
-Version = '1.1.0'
+Version = '1.2.0'
 
 def error_exit( msg, code = -1 )
 	$stderr.puts( "#{File::basename $0}: #{msg}" )
@@ -57,8 +57,8 @@ ARGV.options do |opt|
 		   graph                 : name of graph on hatena.
 		   data                  : data in numeric. (default from STDIN)
 		   
-		   If no --user option specified, this comment try to get it from ~/.netrc
-		   machine as 'hatena.ne.jp'.
+		   If no --user option specified, this command will try to get it from
+         ~/.pit or ~/.netrc machine as 'hatena.ne.jp'.
 		   
 		Copyright (C) 2009 by TADA Tadashi <t@tdtds.jp>
 		Distributed under GPL.
@@ -73,19 +73,30 @@ end
 # check user id and password
 #
 unless Opt.user then
+	auth_entry = 'hatena.ne.jp'
 	begin
-		require 'net/netrc'
-		if netrc = Net::Netrc.locate( 'hatena.ne.jp' ) then
-			Opt.user = netrc.login
-			Opt.pass = netrc.password
-		else
-			error_exit( 'no hatena.ne.jp entry in .netrc.' )
-		end
+		require 'pit'
+		conf = Pit::get( auth_entry, :require => {
+			'username' => 'Your Hatena ID',
+			'password' => 'Your Hatena Password'
+		} )
+		Opt.user = conf['username']
+		Opt.pass = conf['password']
 	rescue LoadError
+		begin
+			require 'net/netrc'
+			if netrc = Net::Netrc.locate( auth_entry ) then
+				Opt.user = netrc.login
+				Opt.pass = netrc.password
+			else
+				error_exit( 'no hatena.ne.jp entry in .netrc.' )
+			end
+		rescue LoadError
+		end
 	end
 end
-error_exit( 'no user id specified.' ) unless Opt.user
-error_exit( 'no password specified.' ) unless Opt.pass
+error_exit( 'no user id specified.' ) if not Opt.user or Opt.user.length == 0
+error_exit( 'no password specified.' ) if not Opt.pass or Opt.pass.length == 0
 
 #
 # check graph parameter

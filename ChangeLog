@@ -1,17 +1,21 @@
-2009-02-09 TADA Tadashi <sho@spc.gr.jp>
+2009-02-09 TADA Tadashi <t@tdtds.jp>
+	* supported pit library.
+	* release 1.2.0
+
+2009-02-09 TADA Tadashi <t@tdtds.jp>
 	* deleted -c option because API has get_data operation.
 	* release 1.1.0.
 
-2007-02-21 TADA Tadashi <sho@spc.gr.jp>
+2007-02-21 TADA Tadashi <t@tdtds.jp>
 	* release 1.0.0.
 
-2007-02-10 TADA Tadashi <sho@spc.gr.jp>
+2007-02-10 TADA Tadashi <t@tdtds.jp>
 	* fix problem 1st update in a day in append mode.
 
-2007-02-09 TADA Tadashi <sho@spc.gr.jp>
+2007-02-09 TADA Tadashi <t@tdtds.jp>
 	* support append mode (-a and -c).
 
-2007-02-06 TADA Tadashi <sho@spc.gr.jp>
+2007-02-06 TADA Tadashi <t@tdtds.jp>
 	* check-in 1st revision.
 	* add usage and error messages.
 
