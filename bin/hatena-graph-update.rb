@@ -3,10 +3,14 @@
 #
 # hatena-graph-update
 #
-# Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
+# Copyright (C) 2009 by TADA Tadashi <t@tdtds.jp>
 # Distributed under GPL.
 #
 
+begin
+	require 'rubygems'
+rescue LoadError
+end
 require 'optparse'
 require 'ostruct'
 require 'time'
@@ -14,7 +18,7 @@ require 'pathname'
 require 'yaml'
 require 'hatena/api/graph'
 
-Version = '1.0.0'
+Version = '1.1.0'
 
 def error_exit( msg, code = -1 )
 	$stderr.puts( "#{File::basename $0}: #{msg}" )
@@ -30,36 +34,33 @@ end
 Opt = OpenStruct::new
 Opt.user = nil
 Opt.pass = nil
-Opt.date = Time::now
+Opt.date = Date::today
 Opt.append = false
-Opt.cache = nil
 Opt.graph = nil
 Opt.data = 0.0
 
 ARGV.options do |opt|
 	opt.on( '-u HATENA_ID', '--user' ) {|v| Opt.user = v }
 	opt.on( '-p PASSWD', '--passwd' )  {|v| Opt.pass = v }
-	opt.on( '-d DATE', '--date' )      {|v| Opt.date = Time::parse( v ) }
+	opt.on( '-d DATE', '--date' )      {|v| Opt.date = Date::parse( v ) }
 	opt.on( '-a', '--append' )         {|v| Opt.append = true }
-	opt.on( '-c CACHE', '--cache' )    {|v| Opt.cache = v }
 	opt.on( '-h', '--help' ) do |v|
 		puts <<-USAGE.gsub( /^\t\t/, '' )
 		hatena-graph-update: sending data to hatena graph service.
 		usage:
-		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] [-a -c cache] graph [data...]
+		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] [-a] graph [data...]
 		   
 		   -u id, --user         : user ID of hatena service.
 		   -p password, --passwd : password of hatena service.
 		   -d date, --date       : date of data. (default TODAY)
 		   -a                    : append to data of same day.
-		   -c cache, --cache     : dirctory of data cache for append mode.
 		   graph                 : name of graph on hatena.
 		   data                  : data in numeric. (default from STDIN)
 		   
 		   If no --user option specified, this comment try to get it from ~/.netrc
 		   machine as 'hatena.ne.jp'.
 		   
-		Copyright (C) 2007 by TADA Tadashi <sho@spc.gr.jp>
+		Copyright (C) 2009 by TADA Tadashi <t@tdtds.jp>
 		Distributed under GPL.
 		
 		USAGE
@@ -103,26 +104,15 @@ else
 	ARGV.each {|arg| Opt.data += arg.to_f }
 end
 
-#
-# check append option
-#
-if Opt.append then
-	unless Opt.cache then
-		error_exit( "cache directory dose not specified." )
-	end
-	cache = Pathname::new( Opt.cache )
-	error_exit( "Such as no directory: #{Opt.cache}" ) unless cache.directory?
-
-	datas = Hash::new( 0.0 )
-	cache_file = cache + Opt.graph
-	cache_file.open {|f| datas.update( YAML::load( f ) ) } rescue false
-	Opt.data += datas[Opt.date.strftime( '%Y-%m-%d' )]
-	datas[Opt.date.strftime( '%Y-%m-%d' )] = Opt.data
-	cache_file.open( 'w' ) {|f| YAML::dump( datas, f ) }
-end
-
 begin
 	g = Hatena::API::Graph::new( Opt.user, Opt.pass )
+
+	if Opt.append then
+		require 'yaml'
+		datas = YAML::load( YAML::dump( g.get_data( Opt.graph ) ) )
+		Opt.data += datas[Opt.date] || 0.0
+	end
+
 	g.post( Opt.graph, Opt.date, Opt.data )
 rescue Hatena::API::GraphError
 	error_exit( $!.message )
