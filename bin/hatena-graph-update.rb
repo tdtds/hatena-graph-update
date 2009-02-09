@@ -11,14 +11,13 @@ begin
 	require 'rubygems'
 rescue LoadError
 end
+require 'hatenagraphup'
 require 'optparse'
 require 'ostruct'
 require 'time'
 require 'pathname'
 require 'yaml'
 require 'hatena/api/graph'
-
-Version = '1.2.0'
 
 def error_exit( msg, code = -1 )
 	$stderr.puts( "#{File::basename $0}: #{msg}" )
@@ -47,6 +46,7 @@ ARGV.options do |opt|
 	opt.on( '-h', '--help' ) do |v|
 		puts <<-USAGE.gsub( /^\t\t/, '' )
 		hatena-graph-update: sending data to hatena graph service.
+		version #{HatenaGraphUp::VERSION}
 		usage:
 		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] [-a] graph [data...]
 		   
