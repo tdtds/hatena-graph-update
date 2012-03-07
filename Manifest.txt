@@ -1,5 +1,0 @@
-Manifest.txt
-ChangeLog
-README.ja
-bin/hatena-graph-update
-lib/hatenagraphup.rb

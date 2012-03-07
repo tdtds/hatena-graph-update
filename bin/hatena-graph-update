@@ -11,7 +11,6 @@ begin
 	require 'rubygems'
 rescue LoadError
 end
-require 'hatenagraphup'
 require 'optparse'
 require 'ostruct'
 require 'time'
@@ -44,9 +43,10 @@ ARGV.options do |opt|
 	opt.on( '-d DATE', '--date' )      {|v| Opt.date = Date::parse( v ) }
 	opt.on( '-a', '--append' )         {|v| Opt.append = true }
 	opt.on( '-h', '--help' ) do |v|
+		require 'hatena/graph-update'
 		puts <<-USAGE.gsub( /^\t\t/, '' )
 		hatena-graph-update: sending data to hatena graph service.
-		version #{HatenaGraphUp::VERSION}
+		version #{Hatena::GraphUpdate::VERSION}
 		usage:
 		   #{File.basename( $0 )} [-u id] [-p pass] [-d date] [-a] graph [data...]
 		   
